@@ -1,5 +1,5 @@
 {
-  "name": "d1-template",
+  "name": "poker-api",
   "description": "Cloudflare's native serverless SQL database.",
   "cloudflare": {
     "label": "Worker + D1 Database",
@@ -21,7 +21,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250429.0",
     "typescript": "5.8.3",
-    "wrangler": "^4.13.2"
+    "wrangler": "^4.14.0"
   },
   "scripts": {
     "cf-typegen": "wrangler types",
@@ -30,5 +30,8 @@
     "dev": "wrangler dev",
     "predeploy": "wrangler d1 migrations apply DB --remote",
     "seedLocalD1": "wrangler d1 migrations apply DB --local"
+  },
+  "dependencies": {
+    "hono": "^4.7.8"
   }
 }
