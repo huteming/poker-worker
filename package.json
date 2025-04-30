@@ -1,5 +1,5 @@
 {
-  "name": "poker-api",
+  "name": "poker-worker",
   "description": "Cloudflare's native serverless SQL database.",
   "cloudflare": {
     "label": "Worker + D1 Database",
