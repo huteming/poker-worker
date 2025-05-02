@@ -7,6 +7,9 @@ import {
   settleAllPendingGameRecords,
   getGameRecordById,
   CreateGameRecordInput,
+  getPlayerStats,
+  SortField,
+  SortOrder,
 } from '../models/game-record'
 
 // base path: /poker/v1/game-records
@@ -23,6 +26,28 @@ gameRecordRoutes.get('/', async (c) => {
 gameRecordRoutes.get('/pending', async (c) => {
   const gameRecords = await getPendingGameRecords(c.env.DB)
   return c.json(gameRecords)
+})
+
+// 获取玩家统计信息
+gameRecordRoutes.get('/player-stats', async (c) => {
+  try {
+    const sortBy = (c.req.query('sortBy') as SortField) || 'win_rate'
+    const order = (c.req.query('order') as SortOrder) || 'desc'
+
+    // 验证排序参数
+    if (!['win_rate', 'total_games', 'wins', 'total_score'].includes(sortBy)) {
+      return c.json({ error: 'Invalid sort field' }, 400)
+    }
+    if (!['asc', 'desc'].includes(order)) {
+      return c.json({ error: 'Invalid sort order' }, 400)
+    }
+
+    const stats = await getPlayerStats(c.env.DB, sortBy, order)
+    return c.json(stats)
+  } catch (error) {
+    console.error(error)
+    return c.json({ error: 'Failed to get player stats' }, 500)
+  }
 })
 
 // 获取单个游戏记录

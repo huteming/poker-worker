@@ -38,6 +38,19 @@ export interface CreateGameRecordInput {
   remarks?: string
 }
 
+export interface PlayerStats {
+  player_id: number
+  player_name: string
+  total_games: number
+  wins: number
+  total_score: number
+  win_rate: number
+  rank: number
+}
+
+export type SortField = 'win_rate' | 'total_games' | 'wins' | 'total_score'
+export type SortOrder = 'asc' | 'desc'
+
 export async function getGameRecords(db: D1Database): Promise<GameRecord[]> {
   const stmt = db.prepare('SELECT * FROM game_records ORDER BY created_at DESC')
   const { results } = await stmt.all()
@@ -202,4 +215,77 @@ export async function getGameRecordById(db: D1Database, id: number): Promise<Gam
     updated_at: String(result.updated_at),
     remarks: result.remarks ? String(result.remarks) : undefined,
   }
+}
+
+export async function getPlayerStats(db: D1Database, sortBy: SortField = 'win_rate', order: SortOrder = 'desc'): Promise<PlayerStats[]> {
+  // 构建排序子句
+  const orderByClause = `
+    ORDER BY 
+      CASE :sortBy
+        WHEN 'win_rate' THEN win_rate
+        WHEN 'total_games' THEN total_games
+        WHEN 'wins' THEN wins
+        WHEN 'total_score' THEN total_score
+      END ${order === 'desc' ? 'DESC' : 'ASC'}
+  `
+
+  const stmt = db
+    .prepare(
+      `
+    WITH game_stats AS (
+      SELECT 
+        p.id as player_id,
+        p.name as player_name,
+        COUNT(CASE WHEN gr.settlement_status = 'SETTLED' THEN 1 END) as total_games,
+        SUM(CASE 
+          WHEN gr.settlement_status = 'SETTLED' AND (gr.player1_id = p.id OR gr.player2_id = p.id) THEN 1
+          ELSE 0
+        END) as wins,
+        SUM(CASE 
+          WHEN gr.settlement_status = 'SETTLED' AND gr.player1_id = p.id THEN gr.player1_final_score
+          WHEN gr.settlement_status = 'SETTLED' AND gr.player2_id = p.id THEN gr.player2_final_score
+          WHEN gr.settlement_status = 'SETTLED' AND gr.player3_id = p.id THEN gr.player3_final_score
+          WHEN gr.settlement_status = 'SETTLED' AND gr.player4_id = p.id THEN gr.player4_final_score
+          ELSE 0
+        END) as total_score
+      FROM players p
+      LEFT JOIN game_records gr ON 
+        p.id = gr.player1_id OR 
+        p.id = gr.player2_id OR 
+        p.id = gr.player3_id OR 
+        p.id = gr.player4_id
+      GROUP BY p.id, p.name
+    )
+    SELECT 
+      player_id,
+      player_name,
+      total_games,
+      wins,
+      total_score,
+      CASE 
+        WHEN total_games > 0 THEN ROUND((wins * 100.0) / total_games, 2)
+        ELSE 0
+      END as win_rate,
+      RANK() OVER (ORDER BY 
+        CASE 
+          WHEN total_games > 0 THEN (wins * 100.0) / total_games
+          ELSE 0
+        END DESC
+      ) as rank
+    FROM game_stats
+    ${orderByClause}
+  `,
+    )
+    .bind(sortBy)
+
+  const { results } = await stmt.all()
+  return results.map((row) => ({
+    player_id: Number(row.player_id),
+    player_name: String(row.player_name),
+    total_games: Number(row.total_games),
+    wins: Number(row.wins),
+    total_score: Number(row.total_score),
+    win_rate: Number(row.win_rate),
+    rank: Number(row.rank),
+  }))
 }
