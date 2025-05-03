@@ -5,10 +5,14 @@ import { logger } from 'hono/logger'
 import { Env } from './types'
 import gameRecordRoutes from './routes/game-record'
 import playerRoutes from './routes/player'
+import { isTestEnvironment } from './utils/helpers'
 
 const app = new Hono<{ Bindings: Env }>().basePath('/poker/v1')
 
-app.use(logger())
+// 只在非测试环境添加 logger
+if (!isTestEnvironment()) {
+  app.use(logger())
+}
 
 // CORS 配置
 app.use(
