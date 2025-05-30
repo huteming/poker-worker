@@ -79,7 +79,7 @@ gameRecordRoutes.post('/', async (c) => {
       !input.player3_id ||
       !input.player4_id ||
       !input.game_result_type ||
-      !['DOUBLE_WIN', 'SINGLE_WIN', 'DRAW'].includes(input.game_result_type)
+      !['DOUBLE_WIN', 'SINGLE_WIN', 'DRAW', 'STALEMATE'].includes(input.game_result_type)
     ) {
       return c.json({ error: 'Invalid input' }, 400)
     }

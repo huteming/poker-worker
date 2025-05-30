@@ -14,7 +14,7 @@ export interface GameRecord {
   player2_final_score: number
   player3_final_score: number
   player4_final_score: number
-  game_result_type: 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW'
+  game_result_type: 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW' | 'STALEMATE'
   settlement_status: 'PENDING' | 'SETTLED'
   created_at: string
   updated_at: string
@@ -34,7 +34,7 @@ export interface CreateGameRecordInput {
   player2_final_score: number
   player3_final_score: number
   player4_final_score: number
-  game_result_type: 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW'
+  game_result_type: 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW' | 'STALEMATE'
   remarks?: string
 }
 
@@ -68,7 +68,7 @@ export async function getGameRecords(db: D1Database): Promise<GameRecord[]> {
     player2_final_score: Number(row.player2_final_score),
     player3_final_score: Number(row.player3_final_score),
     player4_final_score: Number(row.player4_final_score),
-    game_result_type: row.game_result_type as 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW',
+    game_result_type: row.game_result_type as 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW' | 'STALEMATE',
     settlement_status: row.settlement_status as 'PENDING' | 'SETTLED',
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
@@ -97,7 +97,7 @@ export async function getPendingGameRecords(db: D1Database): Promise<GameRecord[
     player2_final_score: Number(row.player2_final_score),
     player3_final_score: Number(row.player3_final_score),
     player4_final_score: Number(row.player4_final_score),
-    game_result_type: row.game_result_type as 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW',
+    game_result_type: row.game_result_type as 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW' | 'STALEMATE',
     settlement_status: row.settlement_status as 'PENDING' | 'SETTLED',
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
@@ -209,7 +209,7 @@ export async function getGameRecordById(db: D1Database, id: number): Promise<Gam
     player2_final_score: Number(result.player2_final_score),
     player3_final_score: Number(result.player3_final_score),
     player4_final_score: Number(result.player4_final_score),
-    game_result_type: result.game_result_type as 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW',
+    game_result_type: result.game_result_type as 'DOUBLE_WIN' | 'SINGLE_WIN' | 'DRAW' | 'STALEMATE',
     settlement_status: result.settlement_status as 'PENDING' | 'SETTLED',
     created_at: String(result.created_at),
     updated_at: String(result.updated_at),
